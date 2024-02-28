@@ -5,15 +5,33 @@ from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.preprocessing import non_max_suppression
 from .sort.detection import Detection
 from .sort.tracker import Tracker
+import os
+import gdown
 
 
 __all__ = ['DeepSort']
 
 
 class DeepSort(object):
-    def __init__(self, max_dist=0.2, use_cuda=True):
+    def __init__(self, model_path=None, max_dist=0.2, use_cuda=True):
         self.min_confidence = 0.3
         self.nms_max_overlap = 1.0
+
+
+        self._default_model_dir = os.path.join(os.getcwd(), "weights")
+        if model_path is None:
+            if not(os.path.isfile(os.path.join(self._default_model_dir, "ckpt.t7"))):
+                os.makedirs(self._default_model_dir, exist_ok=True)
+                
+                gdown.download(
+                    "https://drive.google.com/uc?id=1_qwTWdzT9dWNudpusgKavj_4elGgbkUN", 
+                    os.path.join(self._default_model_dir, "ckpt.t7"), 
+                    quiet=False
+                    )
+        else:
+            self._default_model_dir = model_path
+
+        model_path = os.path.join(self._default_model_dir, "ckpt.t7")
 
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
